@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کنترل پنل</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* CSS for the Aurora background animation and custom styles */
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .aurora-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: #0c0a09;
+            --aurora-color-1: rgba(124, 58, 237, 0.4);
+            --aurora-color-2: rgba(29, 78, 216, 0.4);
+            --aurora-color-3: rgba(190, 24, 93, 0.4);
+            background-image:
+                radial-gradient(ellipse 200% 200% at 10% 10%, var(--aurora-color-1), transparent),
+                radial-gradient(ellipse 200% 200% at 90% 10%, var(--aurora-color-2), transparent),
+                radial-gradient(ellipse 200% 200% at 50% 90%, var(--aurora-color-3), transparent);
+            animation: aurora-animation 15s linear infinite;
+        }
+
+        @keyframes aurora-animation {
+            0% { background-position: 0% 50%, 50% 0%, 100% 50%; }
+            50% { background-position: 100% 50%, 50% 100%, 0% 50%; }
+            100% { background-position: 0% 50%, 50% 0%, 100% 50%; }
+        }
+
+        /* NEW: Rounded Square Styles */
+        .project-card {
+            position: relative;
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        
+        .project-card:hover {
+            background: rgba(31, 41, 55, 0.7);
+            transform: scale(1.1) translateY(-5px); 
+            z-index: 10;
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .project-card .icon {
+            width: 2rem; /* 32px */
+            height: 2rem; /* 32px */
+            transition: all 0.3s ease-in-out;
+            color: rgba(209, 213, 219, 0.7);
+        }
+        .project-card:hover .icon {
+            transform: scale(1.1); color: #fff;
+            filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.7));
+        }
+        
+        /* NEW: Tooltip label for hover and touch */
+        .project-card .label {
+            opacity: 0; 
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            position: absolute; 
+            bottom: -35px; /* Positioned below the card */
+            font-size: 0.8rem;
+            font-weight: 700; color: #e5e7eb; white-space: nowrap;
+            padding: 4px 10px; 
+            background-color: rgba(0,0,0,0.7); 
+            border-radius: 6px;
+            pointer-events: none; /* Prevents the label from interfering with clicks */
+            transform: translateY(10px);
+        }
+        
+        /* This is the key for touch devices: :active shows the label on press */
+        .project-card:hover .label, .project-card:active .label { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+
+        /* Modal styles */
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #111827; /* gray-900 */
+        }
+        
+        /* Dropdown menu styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: #1f2937; /* gray-800 */
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 0.375rem;
+            border: 1px solid #374151; /* gray-700 */
+        }
+        .dropdown-content a {
+            color: #d1d5db; /* gray-300 */
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.2s;
+        }
+        .dropdown-content a:hover { background-color: #374151; /* gray-700 */ }
+        .show { display: block; }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <div class="aurora-background"></div>
+
+    <!-- Main Container -->
+    <div class="relative min-h-screen w-full flex flex-col items-center justify-center p-4">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl font-black tracking-tighter" style="text-shadow: 0 0 15px rgba(167, 139, 250, 0.5);">کنترل پنل</h1>
+            <p class="text-lg text-gray-400 mt-2">یک ماژول را برای اجرا انتخاب کنید</p>
+        </header>
+
+        <!-- Grid Container -->
+        <main class="w-full max-w-5xl mx-auto">
+            <div id="project-grid" class="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-9 gap-y-12 gap-x-4 justify-items-center">
+                <!-- Project cards will be generated by JavaScript here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Uploading and Viewing -->
+    <div id="upload-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="modal-content w-full max-w-4xl h-[90vh] rounded-lg shadow-2xl flex flex-col border border-violet-500/30">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-3 border-b border-gray-700">
+                <input type="text" id="project-name-input" class="bg-transparent border-b-2 border-gray-600 focus:border-violet-500 text-white text-xl font-bold placeholder-gray-500 focus:outline-none transition-colors w-2/3" placeholder="برای پروژه اسم بگذارید...">
+                
+                <div class="flex items-center gap-2">
+                     <!-- Hamburger Dropdown Menu -->
+                    <div class="dropdown">
+                        <button id="menu-button" class="text-gray-300 hover:text-white transition-colors p-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        </button>
+                        <div id="dropdown-menu" class="dropdown-content">
+                            <a href="#" id="upload-link">آپلود / تغییر فایل</a>
+                            <a href="#" id="clear-link" class="text-red-400 hover:!bg-red-500/20">پاک کردن پروژه</a>
+                        </div>
+                    </div>
+                    <input type="file" id="file-input" accept=".html" class="hidden">
+                    <button id="close-modal-button" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded-md transition-colors">&times;</button>
+                </div>
+            </div>
+            <!-- Modal Content (Viewer) -->
+            <div id="viewer-container" class="flex-grow p-1 bg-gray-900/50 flex items-center justify-center">
+                <iframe id="html-viewer" class="w-full h-full border-0 bg-white rounded-b-md"></iframe>
+                <div id="empty-state" class="text-center text-gray-400">
+                    <p class="text-2xl">هنوز فایلی آپلود نشده است</p>
+                    <p class="mt-2">از منو، گزینه آپلود را انتخاب کنید</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // DOM Elements
+        const projectGrid = document.getElementById('project-grid');
+        const modal = document.getElementById('upload-modal');
+        const closeModalButton = document.getElementById('close-modal-button');
+        const projectNameInput = document.getElementById('project-name-input');
+        const fileInput = document.getElementById('file-input');
+        const htmlViewer = document.getElementById('html-viewer');
+        const emptyState = document.getElementById('empty-state');
+        const menuButton = document.getElementById('menu-button');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const uploadLink = document.getElementById('upload-link');
+        const clearLink = document.getElementById('clear-link');
+
+        // State and Constants
+        let currentProjectId = null;
+        const TOTAL_PROJECTS = 63;
+        const icons = [
+            `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.3.05-3.1S5.21 15.24 4.5 16.5Z"/><path d="M19.5 4.5c1.5-1.26 2-5 2-5s-3.74.5-5 2c-.71.84-.7 2.3-.05 3.1.65.8.84 2.3.05 3.1s-2.3.7-3.1.05c-.8-.65-2.3-.84-3.1-.05s-1.26 1.5-2 5-5-2-5-2-2 5-2 5"/><path d="m21.5 21.5-19-19"/></svg>`,
+            `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="10" y1="20" x2="14" y2="4"/></svg>`,
+            `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.38 3.01a2.1 2.1 0 0 0-2.76 0l-6.32 6.32a2.1 2.1 0 0 0 0 2.76l7.7 7.7a2.1 2.1 0 0 0 2.76 0l6.32-6.32a2.1 2.1 0 0 0 0-2.76L12.38 3.01Z"/><path d="m11.68 12.38-5.7 5.7"/><path d="m18.08 6-5.7 5.7"/></svg>`,
+            `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+            `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 8.5 1 1"/></svg>`
+        ];
+
+        // --- Grid Generation ---
+        function createGrid() {
+            projectGrid.innerHTML = ''; // Clear previous grid
+            for (let i = 1; i <= TOTAL_PROJECTS; i++) {
+                const projectCard = document.createElement('div');
+                // NEW: Using classes for rounded square
+                projectCard.className = 'project-card w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center';
+                projectCard.dataset.id = i;
+                
+                const iconIndex = (i - 1) % icons.length;
+                const savedName = localStorage.getItem(`project_name_${i}`) || `پروژه ${i}`;
+
+                projectCard.innerHTML = `
+                    <div class="icon">${icons[iconIndex]}</div>
+                    <span class="label">${savedName}</span>
+                `;
+
+                projectCard.addEventListener('click', () => openModal(i));
+                projectGrid.appendChild(projectCard);
+            }
+        }
+
+        // --- Modal Logic ---
+        function openModal(projectId) {
+            currentProjectId = projectId;
+            const savedName = localStorage.getItem(`project_name_${projectId}`) || '';
+            projectNameInput.value = savedName;
+            modal.classList.remove('hidden');
+            
+            const savedContent = localStorage.getItem(`project_html_${projectId}`);
+            if (savedContent) {
+                htmlViewer.srcdoc = savedContent;
+                htmlViewer.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            } else {
+                htmlViewer.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            dropdownMenu.classList.remove('show');
+            currentProjectId = null;
+            htmlViewer.srcdoc = ''; // Clear iframe
+        }
+
+        // --- Name Management ---
+        projectNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const newName = projectNameInput.value.trim();
+                if (currentProjectId) {
+                    localStorage.setItem(`project_name_${currentProjectId}`, newName);
+                    // Update label in the grid dynamically
+                    const cardInGrid = projectGrid.querySelector(`[data-id='${currentProjectId}'] .label`);
+                    if (cardInGrid) {
+                        cardInGrid.textContent = newName || `پروژه ${currentProjectId}`;
+                    }
+                    projectNameInput.blur(); // Remove focus after saving
+                }
+            }
+        });
+
+        // --- File Management ---
+        fileInput.addEventListener('change', (event) => {
+            if (!currentProjectId) return;
+            const file = event.target.files[0];
+            if (file && file.type === "text/html") {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    localStorage.setItem(`project_html_${currentProjectId}`, content);
+                    htmlViewer.srcdoc = content;
+                    htmlViewer.classList.remove('hidden');
+                    emptyState.classList.add('hidden');
+                };
+                reader.readAsText(file);
+            } else {
+                alert("لطفاً فقط فایل با فرمت .html انتخاب کنید.");
+            }
+            fileInput.value = ''; // Reset input
+        });
+
+        // --- Dropdown Menu Logic ---
+        menuButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent window.onclick from closing it immediately
+            dropdownMenu.classList.toggle('show');
+        });
+
+        uploadLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            fileInput.click();
+            dropdownMenu.classList.remove('show');
+        });
+        
+        clearLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentProjectId && confirm(`آیا از پاک کردن کامل پروژه ${currentProjectId} مطمئن هستید؟`)) {
+                localStorage.removeItem(`project_html_${currentProjectId}`);
+                localStorage.removeItem(`project_name_${currentProjectId}`);
+                htmlViewer.srcdoc = '';
+                htmlViewer.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                projectNameInput.value = '';
+                // Update grid label back to default
+                const cardInGrid = projectGrid.querySelector(`[data-id='${currentProjectId}'] .label`);
+                if (cardInGrid) {
+                    cardInGrid.textContent = `پروژه ${currentProjectId}`;
+                }
+            }
+            dropdownMenu.classList.remove('show');
+        });
+
+        // Close dropdown if clicked outside
+        window.onclick = (event) => {
+            if (!event.target.closest('.dropdown')) {
+                if (dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.remove('show');
+                }
+            }
+        };
+
+        // --- Global Event Listeners ---
+        closeModalButton.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // --- Initial App Start ---
+        createGrid();
+
+    </script>
+</body>
+</html>
